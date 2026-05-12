@@ -1,0 +1,75 @@
+### 1. Регистрация пользователя
+POST http://localhost:8000/auth/users/
+Content-Type: application/json
+
+{
+  "username": "alex",
+  "password": "TestPass123"
+}
+
+### 2. Получение JWT токена
+POST http://localhost:8000/auth/jwt/create/
+Content-Type: application/json
+
+{
+  "username": "alex",
+  "password": "TestPass123"
+}
+
+> {% client.global.set("access_token", response.body.access); %}
+
+### 3. Создание объявления (успех)
+POST http://localhost:8000/announcements/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "title": "Потерян рыжий кот",
+  "description": "В районе парка потерялся рыжий кот по кличке Барсик, отзывается на имя. Очень дружелюбный.",
+  "type": "lost",
+  "location": "Парк культуры",
+  "contact_info": "тел: 89001234567"
+}
+
+### 4. Получение списка объявлений
+GET http://localhost:8000/announcements/?type=lost
+
+### 5. Добавление фотографии (успех)
+POST http://localhost:8000/announcements/1/add_photo/
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="cat.jpg"
+Content-Type: image/jpeg
+
+< ./cat.jpg
+--boundary--
+
+### 6. Получение списка фотографий объявления
+GET http://localhost:8000/announcements/1/photos/
+
+### 7. Закрытие объявления
+POST http://localhost:8000/announcements/1/close/
+Authorization: Bearer {{access_token}}
+
+### 8. Попытка редактирования чужого объявления (ошибка 403)
+PATCH http://localhost:8000/announcements/1/
+Authorization: Bearer {{access_token_another}}
+Content-Type: application/json
+
+{
+  "title": "Попытка взлома"
+}
+
+### 9. Создание объявления с коротким заголовком (ошибка валидации)
+POST http://localhost:8000/announcements/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "title": "Кот",
+  "description": "Потерялся кот, нужна помощь. Был в красном ошейнике.",
+  "type": "lost",
+  "contact_info": "89123456789"
+}
