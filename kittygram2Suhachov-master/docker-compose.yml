@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: lostfound_web
+    command: gunicorn kittygram2.wsgi:application --bind 0.0.0.0:8000
+    restart: unless-stopped
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - ./db.sqlite3:/app/db.sqlite3
+    expose:
+      - 8000
+    env_file:
+      - .env
+    
+  nginx:
+    image: nginx:latest
+    container_name: lostfound_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/static
+      - media_volume:/app/media
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  media_volume:
